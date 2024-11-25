@@ -7,7 +7,7 @@ async def song_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Song for you: {song}')
 
 
-application = Application.builder().token("7937451091:AAG2fQ5DGPBnpYl5JHmK5IaB9ntU7EmIjck").build()
+application = Application.builder().token("Token bot").build()
 
 application.add_handler(CommandHandler("song", song_link))
 

@@ -101,9 +101,16 @@ def load_message(name):
 
 # загружает промпт из папки  /res/messages/
 def load_prompt(name):
-    with open("res/prompts/" + name + ".txt", "r",
-              encoding="utf8") as file:
-        return file.read()
+    try:
+        with open(f"res/prompts/{name}.txt", "r", encoding="utf8") as file:
+            return file.read()
+    except FileNotFoundError as e:
+        logger.error(f"Файл {name}.txt не найден: {e}")
+        return "Ошибка загрузки промпта."
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке {name}.txt: {e}")
+        return "Произошла ошибка."
+
 
 
 async def default_callback_handler(update: Update,

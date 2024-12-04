@@ -5,7 +5,8 @@ from pymsgbox import prompt
 from selenium.webdriver.common.devtools.v85.runtime import await_promise
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import TelegramError
-from telegram.ext import ApplicationBuilder, CallbackQueryHandler, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CallbackQueryHandler, ContextTypes, CommandHandler, MessageHandler, \
+    filters, ConversationHandler
 from dotenv import load_dotenv
 import os
 from chatgpt import ChatGptService
@@ -33,6 +34,12 @@ chat_gpt = ChatGptService(CHATGPT_TOKEN)
 # Создаем приложение Telegram
 app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
+# Добавляем необходимые состояния
+EDUCATION, EXPERIENCE, SKILLS = range(3)
+
+# Хранилище данных пользователя
+user_data = {}
+
 # Включаем логирование
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,7 +64,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'random': 'Узнать случайный интересный факт 🧠',
             'gpt': 'Задать вопрос чату GPT 🤖',
             'talk': 'Поговорить с известной личностью 👤',
-            'quiz': 'Поучаствовать в квизе ❓'
+            'quiz': 'Поучаствовать в квизе ❓',
+            'cv': 'Создай резюме'
         }
 
         # Отправляем меню с кнопками
@@ -287,6 +295,74 @@ async def quiz_change_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await quiz(update, context)
 
 
+# Обработчик для команды /cv (начало процесса создания резюме)
+async def start_resume(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Получаем callback_query, а не message
+    callback_query = update.callback_query
+    await callback_query.answer()  # Ответ на нажатие кнопки
+
+    # Отправляем сообщение через callback_query.message
+    await callback_query.message.reply_text('Привет! Я помогу тебе составить резюме. Начнем с твоего образования.')
+    return EDUCATION
+
+# Обработчик для ввода образования
+async def education_step(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_education = update.message.text
+    context.user_data['education'] = user_education
+    await update.message.reply_text(f'Твое образование: {user_education}. Давай теперь поговорим о твоем опыте работы.')
+    return EXPERIENCE
+
+# Обработчик для ввода опыта работы
+async def experience_step(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_experience = update.message.text
+    context.user_data['experience'] = user_experience
+    await update.message.reply_text(f'Твой опыт работы: {user_experience}. Теперь, давай обсудим твои навыки.')
+    return SKILLS
+
+# Обработчик для ввода навыков
+async def skills_step(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_skills = update.message.text
+    context.user_data['skills'] = user_skills
+    await update.message.reply_text(f'Твои навыки: {user_skills}. Спасибо за информацию! Резюме готово.')
+
+    # Формируем резюме
+    resume = f"""
+    Резюме:
+    Образование: {context.user_data['education']}
+    Опыт работы: {context.user_data['experience']}
+    Навыки: {context.user_data['skills']}
+    """
+
+    # Отправляем резюме с кнопками
+    buttons = [
+        [InlineKeyboardButton("Создать еще", callback_data="cv")],  # Кнопка для создания нового резюме
+        [InlineKeyboardButton("Закончить", callback_data="start")]  # Кнопка для завершения процесса
+    ]
+    keyboard = InlineKeyboardMarkup(buttons)
+
+    await update.message.reply_text(resume, reply_markup=keyboard)
+
+    return ConversationHandler.END
+
+# Функция для отмены процесса создания резюме
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Процесс создания резюме отменен.")
+    return ConversationHandler.END
+
+# Обновляем ConversationHandler
+cv_conversation_handler = ConversationHandler(
+    entry_points=[CallbackQueryHandler(start_resume, pattern="^cv$")],
+    states={
+        EDUCATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, education_step)],
+        EXPERIENCE: [MessageHandler(filters.TEXT & ~filters.COMMAND, experience_step)],
+        SKILLS: [MessageHandler(filters.TEXT & ~filters.COMMAND, skills_step)],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)],  # Убедитесь, что здесь правильная функция
+)
+
+
+
+
 # Обработчик нажатий на кнопки
 async def buttons_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
@@ -308,11 +384,18 @@ async def buttons_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 [InlineKeyboardButton("Узнать случайный интересный факт 🧠", callback_data="random")],
                 [InlineKeyboardButton("Задать вопрос чату GPT 🤖", callback_data="gpt")],
                 [InlineKeyboardButton("Поговорить с известной личностью 👤", callback_data="talk")],
-                [InlineKeyboardButton("Поучаствовать в квизе ❓", callback_data="quiz")]
+                [InlineKeyboardButton("Поучаствовать в квизе ❓", callback_data="quiz")],
+                [InlineKeyboardButton("Создай резюме", callback_data='cv')]
             ])
         )
+
     elif query.data == "random":
         await random_fact(update, context)
+
+
+    elif query.data == "cv":
+        # Запуск процесса создания резюме
+        await start_resume(update, context)
 
     elif query.data == "gpt":
         await query.message.reply_text(
@@ -342,23 +425,21 @@ async def buttons_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     elif query.data == "quiz_change_topic":
         await quiz_change_topic(update, context)
 
-    elif query.data == "start":
-        # Если нажали на кнопку "Закончить", показываем главное меню
-        await start(update, context)
-
 
 # Регистрируем обработчики
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("random", random_fact))
-app.add_handler(CommandHandler("gpt", gpt_question))
-app.add_handler(CommandHandler("quiz", quiz))
-app.add_handler(CallbackQueryHandler(quiz_topic_choice, pattern="^quiz_"))
-app.add_handler(CallbackQueryHandler(quiz_change_topic, pattern="quiz_change_topic"))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, quiz_answer))
+app.add_handler(CommandHandler("start", start))  # Обработчик команды /start
+app.add_handler(CommandHandler("random", random_fact))  # Обработчик команды /random
+app.add_handler(CommandHandler("gpt", gpt_question))  # Обработчик команды /gpt
+app.add_handler(cv_conversation_handler)
+app.add_handler(CommandHandler("quiz", quiz))  # Обработчик для квиза
+app.add_handler(CallbackQueryHandler(quiz_topic_choice, pattern="^quiz_"))  # Выбор темы квиза
+app.add_handler(CallbackQueryHandler(quiz_change_topic, pattern="quiz_change_topic"))  # Изменить тему квиза
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, quiz_answer))  # Обработка ответов на квиз
 app.add_handler(CommandHandler("talk", talk_to_celebrity))  # Обработчик для команды /talk
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-app.add_handler(CallbackQueryHandler(personality_choice, pattern="^(Albert Einstein|Leonardo da Vinci|Cleopatra)$"))
-app.add_handler(CallbackQueryHandler(buttons_handler))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))  # Общий обработчик сообщений
+app.add_handler(CallbackQueryHandler(personality_choice,
+                                     pattern="^(Albert Einstein|Leonardo da Vinci|Cleopatra)$"))  # Выбор персонажа
+app.add_handler(CallbackQueryHandler(buttons_handler))  # Обработчик кнопок, если он не связан с резюме
 
 # Запуск бота
 app.run_polling()

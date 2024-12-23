@@ -1,0 +1,39 @@
+/* Основные стили для уведомления */
+#geo-notification {
+    display: none; /* Скрыто по умолчанию */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #f0f0f0;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    width: 300px;
+    z-index: 1000;
+}
+
+/* Текст уведомления */
+#geo-notification p {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Кнопка */
+#allow-geo {
+    background: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+/* Ховер-эффект для кнопки */
+#allow-geo:hover {
+    background: #45a049;
+}

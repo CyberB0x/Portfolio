@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Info Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        .info { margin: 10px 0; }
+        button { padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fake Info Generator</h1>
+        <button id="generateBtn">Generate Info</button>
+        <div id="result" class="info"></div>
+    </div>
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const resultDiv = document.getElementById('result');
+
+        generateBtn.addEventListener('click', async () => {
+            const response = await fetch('/api/generate');
+            const data = await response.json();
+
+            resultDiv.innerHTML = `
+                <p><strong>Name:</strong> ${data.name}</p>
+                <p><strong>Gender:</strong> ${data.gender}</p>
+                <p><strong>Address:</strong> ${data.address}</p>
+                <p><strong>Phone:</strong> ${data.phone_number}</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>Credit Card:</strong><br>${data.credit_card}</p>
+                <p><strong>Birth Date:</strong> ${data.birth_date}</p>
+            `;
+        });
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 
 # Файл для сохранения IP-адресов
-IP_FILE = 'ip_addresses.txt'
+IP_FILE = 'ip_addresses'
 
 
 def save_ip(ip_address):

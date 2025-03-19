@@ -1,14 +1,12 @@
 FROM python:3.12-alpine
 
-LABEL authors="Arslon"
-
 WORKDIR /app
 
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py .
+COPY ../../../../M2ImageHosting/app .
 
 EXPOSE 8000
 

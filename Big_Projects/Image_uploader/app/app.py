@@ -2,7 +2,7 @@ from http.server import HTTPServer
 
 from loguru import logger
 
-from ImageHostingHandler import ImageHostingHttpRequestHandler
+from ImageHosting import ImageHostingHttpRequestHandler
 from settings import SERVER_ADDRESS
 
 

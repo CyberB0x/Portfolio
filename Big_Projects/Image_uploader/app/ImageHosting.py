@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from loguru import logger
 
-from advanced_http_request_handler import AdvancedHTTPRequestHandler
+from http_request_handler import AdvancedHTTPRequestHandler
 from settings import IMAGES_PATH, \
     ALLOWED_EXTENSIONS, MAX_FILE_SIZE, ERROR_FILE
 

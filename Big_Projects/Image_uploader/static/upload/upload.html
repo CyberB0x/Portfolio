@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload UI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style_upload.css"/>
+    <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
 <h4 class="fw-bold">Upload Photos</h4>
@@ -13,13 +13,14 @@
 
 <div class="d-flex justify-content-center mb-3">
     <a href="#" class="text-decoration-none fw-bold text-primary me-3">Upload</a>
-    <a href="#" class="text-decoration-none text-muted">Images</a>
+    <a href="../images/img_page.html" class="text-decoration-none text-muted">Images</a>
 </div>
 
 <div class="upload-box">
     <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" width="50">
-    <p class="upload-failed fw-bold">Upload failed</p>
+    <p class="upload-failed fw-bold">Select a file or drag and drop here</p>
     <p class="text-muted small">Only support .jpg, .png and .gif <br> Maximum file size is 5MB</p>
+    <input type="file" id="fileInput" hidden/>
 </div>
 
 <button class="btn-upload">BROWSE YOUR FILE</button>
@@ -29,6 +30,19 @@
     <input type="text" class="from-control" placeholder="https://">
     <button class="btn-copy">COPY</button>
 </div>
+
+<h6 class="fw-bold mt-4">Gallery</h6>
+<div class="gallery">
+    <img src="https://picsum.photos/150?random=1" alt="Gallery Image 1">
+    <img src="https://picsum.photos/150?random=2" alt="Gallery Image 2">
+    <img src="https://picsum.photos/150?random=3" alt="Gallery Image 3">
+    <img src="https://picsum.photos/150?random=4" alt="Gallery Image 4">
+</div>
+</br>
+
+<button class="btn-copy" onclick="window.location.href='../index.html'">Main page</button>
+
+<script src="script.js"></script>
 
 </body>
 </html>

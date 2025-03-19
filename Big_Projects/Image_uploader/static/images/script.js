@@ -1,4 +1,3 @@
-
 const tbody = document.getElementById('imagesTableBody');
 fetch('/api/images/').then(response => response.json()).then(images => setImages(images.images));
 

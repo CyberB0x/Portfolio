@@ -2,6 +2,8 @@ import os
 from uuid import uuid4
 
 from loguru import logger
+from PIL import Image
+from io import BytesIO
 
 from http_request_handler import AdvancedHTTPRequestHandler
 from settings import IMAGES_PATH, \
@@ -39,15 +41,29 @@ class ImageHostingHttpRequestHandler(AdvancedHTTPRequestHandler):
         data = self.rfile.read(length)
         _, ext = os.path.splitext(self.headers.get('Filename'))
         image_id = uuid4()
-        if ext not in ALLOWED_EXTENSIONS:
+
+        if ext.lower() not in ALLOWED_EXTENSIONS:
             logger.warning('File type not allowed')
             self.send_html(ERROR_FILE, 400)
             return
 
-        with open(IMAGES_PATH + f'{image_id}{ext}', 'wb') as file:
+        # Проверяем, является ли файл изображением
+        try:
+            image = Image.open(BytesIO(data))
+            image.verify()  # Проверка целостности изображения
+        except Exception as e:
+            logger.warning(f'Invalid image: {e}')
+            self.send_html(ERROR_FILE, 400)
+            return
+
+        # Сохраняем изображение
+        file_path = os.path.join(IMAGES_PATH, f'{image_id}{ext}')
+        with open(file_path, 'wb') as file:
             file.write(data)
+
         self.send_html('upload_success.html', headers={
-            'Location': f'http://localhost/{IMAGES_PATH}{image_id}{ext}'})
+            'Location': f'http://localhost/{file_path}'
+        })
 
     def delete_image(self):
         image_id = self.headers.get('Filename')

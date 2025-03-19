@@ -44,13 +44,24 @@ function handleFiles(files) {
     return;
   }
 
-  if (file.size > 5 * 1024 * 1024) {
+  function redirectAfterDelay(targetPage, returnPage) {
+    window.location.href = targetPage;
+    setTimeout(() => {
+        window.location.href = returnPage;
+    }, 1500);
+}
+
+// Проверяем размер файла
+if (file.size > 5 * 1024 * 1024) {
     dropArea.classList.add('error');
     dropArea.classList.remove('success');
+    redirectAfterDelay('upload_failed.html', 'upload.html');  // Укажи свою страницу возврата
     return;
-  }
+}
 
-  dropArea.classList.remove('error');
+dropArea.classList.remove('error');
+dropArea.classList.add('success');
+redirectAfterDelay('upload_success.html', 'upload.html');  // Укажи свою страницу возврата
 
 }
 

@@ -103,3 +103,4 @@ function uploadFile() {
 document.getElementById('btnGoToImages').addEventListener('click', (event) => {
     window.location.href = '/images/';
 });
+

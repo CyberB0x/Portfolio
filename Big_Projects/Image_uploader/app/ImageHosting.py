@@ -61,7 +61,7 @@ class ImageHostingHttpRequestHandler(AdvancedHTTPRequestHandler):
         with open(file_path, 'wb') as file:
             file.write(data)
 
-        self.send_html('upload_success.html', headers={
+        self.send_html('../static/upload_success.html', headers={
             'Location': f'http://localhost/{file_path}'
         })
 
